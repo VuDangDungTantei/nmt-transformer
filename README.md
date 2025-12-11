@@ -356,8 +356,6 @@ Các phần tiếp theo (sẽ được bổ sung):
 
 - Pipeline được viết theo hướng **tự triển khai tối đa**, không dùng `torchtext` hay HuggingFace Transformers, để phù hợp với mục tiêu **“Transformer from scratch”**.
 - Phần này có thể dùng trực tiếp làm nội dung cho chương **Xử lý dữ liệu** trong báo cáo đồ án (có thể copy lại, thêm hình/biểu đồ minh họa thống kê).
-````
-::contentReference[oaicite:0]{index=0}
 
 ---
 
