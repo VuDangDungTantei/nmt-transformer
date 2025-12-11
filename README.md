@@ -358,3 +358,44 @@ Các phần tiếp theo (sẽ được bổ sung):
 - Phần này có thể dùng trực tiếp làm nội dung cho chương **Xử lý dữ liệu** trong báo cáo đồ án (có thể copy lại, thêm hình/biểu đồ minh họa thống kê).
 ````
 ::contentReference[oaicite:0]{index=0}
+
+---
+
+## 10. Thêm dữ liệu vào project
+
+Do kích thước dataset lớn, **dữ liệu không được lưu trực tiếp trong GitHub repo**.  
+Để chạy được project, bạn cần tự tải dữ liệu về và đặt đúng thư mục như sau:
+
+1. **Tải dữ liệu từ Google Drive**
+
+   - Truy cập link dataset: `https://drive.google.com/drive/folders/1whRgJWkj2gMvpyzlx3Up5nB2mYB51XmM?usp=drive_link`  
+   - Tải toàn bộ folder/dataset về máy (ví dụ dạng `.zip`).
+
+2. **Giải nén và đặt vào thư mục `data/`**
+
+   Cấu trúc thư mục sau khi giải nén và copy vào project nên giống:
+
+   nmt-transformer/
+   ├── data/
+   │   ├── raw/
+   │   │   ├── train.en
+   │   │   ├── train.vi
+   │   │   └── ...
+   │   ├── processed/
+   │   │   ├── train.en
+   │   │   ├── train.vi
+   │   │   └── ...
+   │   └── spm/
+   │       ├── train_combined.txt
+   │       └── ...
+   └── src/
+       └── ...
+
+   Chỉ cần đảm bảo các file dữ liệu (`train.en`, `train.vi`, `train_combined.txt`, v.v.) nằm đúng trong thư mục `data/` như trên.
+
+3. **Lưu ý về Git**
+
+   - Thư mục `data/` đã được thêm vào `.gitignore` để tránh push nhầm dataset lớn lên GitHub.
+   - Khi làm việc với git, **không chạy `git add data/`**.
+
+Sau khi hoàn thành các bước trên, bạn có thể chạy các script train/evaluate như hướng dẫn ở các mục trước.
