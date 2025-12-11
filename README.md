@@ -372,6 +372,7 @@ Do kích thước dataset lớn, **dữ liệu không được lưu trực tiế
 2. **Giải nén và đặt vào thư mục `data/`**
 
    Cấu trúc thư mục sau khi giải nén và copy vào project nên giống:
+   ```
 
    nmt-transformer/
    ├── data/
@@ -388,7 +389,7 @@ Do kích thước dataset lớn, **dữ liệu không được lưu trực tiế
    │       └── ...
    └── src/
        └── ...
-
+  ```
    Chỉ cần đảm bảo các file dữ liệu (`train.en`, `train.vi`, `train_combined.txt`, v.v.) nằm đúng trong thư mục `data/` như trên.
 
 3. **Lưu ý về Git**
