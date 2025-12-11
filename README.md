@@ -366,31 +366,30 @@ Do kích thước dataset lớn, **dữ liệu không được lưu trực tiế
 
 1. **Tải dữ liệu từ Google Drive**
 
-   - Truy cập link dataset: `https://drive.google.com/drive/folders/1whRgJWkj2gMvpyzlx3Up5nB2mYB51XmM?usp=drive_link`  
+   - Truy cập link dataset: https://drive.google.com/drive/folders/1whRgJWkj2gMvpyzlx3Up5nB2mYB51XmM?usp=drive_link  
    - Tải toàn bộ folder/dataset về máy (ví dụ dạng `.zip`).
 
 2. **Giải nén và đặt vào thư mục `data/`**
 
    Cấu trúc thư mục sau khi giải nén và copy vào project nên giống:
-   ```
 
-   nmt-transformer/
-   ├── data/
-   │   ├── raw/
-   │   │   ├── train.en
-   │   │   ├── train.vi
-   │   │   └── ...
-   │   ├── processed/
-   │   │   ├── train.en
-   │   │   ├── train.vi
-   │   │   └── ...
-   │   └── spm/
-   │       ├── train_combined.txt
-   │       └── ...
-   └── src/
-       └── ...
-  ```
-   Chỉ cần đảm bảo các file dữ liệu (`train.en`, `train.vi`, `train_combined.txt`, v.v.) nằm đúng trong thư mục `data/` như trên.
+```text
+nmt-transformer/
+├── data/
+│   ├── raw/
+│   │   ├── train.en
+│   │   ├── train.vi
+│   │   └── ...
+│   ├── processed/
+│   │   ├── train.en
+│   │   ├── train.vi
+│   │   └── ...
+│   └── spm/
+│       ├── train_combined.txt
+│       └── ...
+└── src/
+    └── ...
+```
 
 3. **Lưu ý về Git**
 
@@ -398,3 +397,4 @@ Do kích thước dataset lớn, **dữ liệu không được lưu trực tiế
    - Khi làm việc với git, **không chạy `git add data/`**.
 
 Sau khi hoàn thành các bước trên, bạn có thể chạy các script train/evaluate như hướng dẫn ở các mục trước.
+
