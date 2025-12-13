@@ -366,7 +366,7 @@ Do kích thước dataset lớn, **dữ liệu không được lưu trực tiế
 
 1. **Tải dữ liệu từ Google Drive**
 
-   - Truy cập link dataset: https://drive.google.com/file/d/1YCc2f2ve-h9rO6mzbkg2YdNu-2aFcyRU/view?usp=sharing 
+   - Truy cập link dataset: https://drive.google.com/file/d/1Y9MjBf03auNa5M8PqjsIRblN9k1bsyOW/view?usp=sharing
    - Tải toàn bộ folder/dataset về máy (ví dụ dạng `.zip`).
 
 2. **Giải nén và đặt vào thư mục `data/`**
