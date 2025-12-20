@@ -1,0 +1,37 @@
+# === Python chung ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual env
+.env/
+.venv/
+venv/
+env/
+
+# Jupyter / VSCode
+.ipynb_checkpoints/
+.vscode/
+
+# === Dataset / dữ liệu nặng ===
+MedicalDataset_VLSP/
+data_vlsp/
+data/raw/
+data/processed/
+data/spm/
+tokenizer_vlsp_8k/
+*.csv
+*.tsv
+
+# === Model / checkpoint nặng ===
+*.pt
+*.pth
+checkpoints/
+runs/
+outputs/
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
