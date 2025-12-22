@@ -1,360 +1,173 @@
-# Neural Machine Translation Transformer (En–Vi) – Data Pipeline
+# Neural Machine Translation Transformer (En–Vi) và Fine tune trên dữ liệu VLSP Medical
 
-Dự án này triển khai **pipeline dữ liệu** cho hệ thống dịch máy Anh–Việt (Neural Machine Translation) dùng kiến trúc Transformer **tự code from scratch**.
-
-> ⚠️ Hiện tại repo mới hoàn thành đến **DataLoader** (chuẩn bị batch cho mô hình).  
-> Phần kiến trúc Transformer, huấn luyện và decoding sẽ được bổ sung sau.
+Dự án này triển khai **pipeline dữ liệu** cho hệ thống dịch máy Anh–Việt (Neural Machine Translation) dùng kiến trúc Transformer **tự code from scratch** (70%) và fine tune trên dữ liệu VLSP medical (30%)
 
 ---
 
-## 1. Mục tiêu hiện tại
+## 1. Triển khai Transformer From Scratch
 
-Triển khai trọn vẹn phần **A. Xử lý dữ liệu** trong bài tập lớn NLP 2025:
+## 2. Fine-tune dữ liệu medical trên Transformer tự huấn luyện
 
-- Thu thập & chuẩn hóa dữ liệu song ngữ Anh–Việt.
-- Tiền xử lý: làm sạch, lọc câu bất thường, thống kê độ dài câu.
-- Huấn luyện **subword tokenizer** (SentencePiece).
-- Xây dựng `NMTDataset` và `DataLoader` cho PyTorch:
-  - Tạo `src_ids`, `tgt_in_ids`, `tgt_out_ids`.
-  - Padding, truncation.
-  - Tạo padding mask cho src/tgt.
+Fine-tune checkpoint Transformer EN→VI (đã train general domain) để thích nghi miền **y khoa** bằng dữ liệu VLSP Medical.
 
----
+### Data
 
-## 2. Dataset
+#### Input (raw)  
+- `data/raw/train.en.txt`
+- `data/raw/train.vi.txt`
+- `data/raw/public_test.en.txt`
+- `data/raw/public_test.vi.txt`
 
-### 2.1. Nguồn dữ liệu
+#### Output (processed, align 1-1 theo dòng)
+Sau preprocess sẽ tạo:
+- `data/processed/train.{en,vi}`
+- `data/processed/dev.{en,vi}`
+- `data/processed/test.{en,vi}`
+- `data/processed/stats.json`
 
-Dataset sử dụng: **IWSLT 2015 English–Vietnamese** (bản Stanford NMT), lấy qua mirror (ví dụ: Kaggle).
-
-Các file gốc sau khi tải về và đổi tên:
-
-```text
-data/raw/
-  train.en
-  train.vi
-  valid.en      # từ tst2012.en
-  valid.vi      # từ tst2012.vi
-  test.en       # từ tst2013.en
-  test.vi       # từ tst2013.vi
-  vocab.en      # (optional, chưa dùng)
-  vocab.vi      # (optional, chưa dùng)
-  dict.en-vi    # (optional, chưa dùng)
-```
-
-### 2.2. Làm sạch & lọc câu bất thường
-
-Các bước xử lý:
-
-- `strip()` và `lower()` cho mỗi câu.
-- Bỏ các câu rỗng.
-- Lọc outlier: loại bỏ cặp câu nếu **EN hoặc VI > 100 tokens** (token tạm tính bằng `split()` theo khoảng trắng).
-
-Kết quả:
-
-- **train**: kept = 132,406, dropped = 911  
-- **valid**: kept = 1,550, dropped = 3  
-- **test** : kept = 1,262, dropped = 6  
-
-Dữ liệu sau khi làm sạch được lưu tại:
-
-```text
-data/processed/
-  train.en
-  train.vi
-  valid.en
-  valid.vi
-  test.en
-  test.vi
-```
-
-### 2.3. Thống kê độ dài câu
-
-Token tạm tính bằng `str.split()` (chưa dùng subword).
-
-**English:**
-
-- min: 1  
-- mean: ~20.32  
-- median: 16  
-- 95% percentile: 47  
-- 99% percentile: 71  
-- max: 628 (outlier, đã bị lọc nếu > 100)
-
-**Vietnamese:**
-
-- min: 1  
-- mean: ~24.86  
-- median: 20  
-- 95% percentile: 59  
-- 99% percentile: 89  
-- max: 850 (outlier, đã bị lọc nếu > 100)
-
-Từ thống kê này, hệ thống chọn:
-
-```python
-MAX_SRC_LEN = 70
-MAX_TGT_LEN = 70
-```
-
-để bao phủ ~99% câu mà vẫn giữ mô hình gọn.
+#### Tokenizer (SentencePiece)
+Sau khi train SPM sẽ tạo:
+- `data/spm/spm.model`
+- `data/spm/spm.vocab`
+- `data/spm/train.all.txt` (file gộp để train tokenizer)
 
 ---
 
-## 3. Tokenizer & Vocabulary (SentencePiece)
-
-Tokenizer sử dụng **SentencePiece** với mô hình subword (unigram).
-
-### 3.1. Chuẩn bị dữ liệu huấn luyện tokenizer
-
-Tạo file gộp từ train EN + VI:
-
-```text
-data/spm/
-  train_combined.txt   # train.en + train.vi
-```
-
-### 3.2. Huấn luyện SentencePiece
-
-Tham số tiêu biểu:
-
-- `vocab_size = 8000`  
-- `model_type = "unigram"`  
-- `character_coverage = 0.9995`  
-- Special IDs:
-  - `pad_id = 0`
-  - `unk_id = 1`
-  - `bos_id = 2`
-  - `eos_id = 3`
-
-Output:
-
-```text
-data/spm/
-  train_combined.txt
-  spm_unigram.model
-  spm_unigram.vocab
-```
+### Scripts / Notebooks liên quan
+- `organize_vlsp_data_txt.py`: clean + filter + split `dev` (2%) + export `data/processed/*`
+- `train_spm_vlsp.py`: train SentencePiece từ `data/processed/train.{en,vi}` → `data/spm/spm.model`
+- `notebook/trainning-nlp-p2.ipynb`: fine-tune Transformer từ checkpoint pretrained
+- `notebook/best_transformer_v3.pt`: checkpoint pretrained dùng để khởi tạo fine-tune
+- `src/{dataset.py, model.py, tokenizer.py}`: core code (Dataset/Model/Tokenizer) mà notebook import
 
 ---
 
-## 4. Cấu trúc thư mục
+### Cấu hình chính
 
-```text
-.
-├── data/
-│   ├── raw/
-│   │   ├── train.en
-│   │   ├── train.vi
-│   │   ├── valid.en
-│   │   ├── valid.vi
-│   │   ├── test.en
-│   │   ├── test.vi
-│   │   ├── vocab.en
-│   │   ├── vocab.vi
-│   │   └── dict.en-vi
-│   ├── processed/
-│   │   ├── train.en
-│   │   ├── train.vi
-│   │   ├── valid.en
-│   │   ├── valid.vi
-│   │   ├── test.en
-│   │   └── test.vi
-│   └── spm/
-│       ├── train_combined.txt
-│       ├── spm_unigram.model
-│       └── spm_unigram.vocab
-├── src/
-│   ├── tokenizer.py
-│   └── dataset.py
-└── notebooks/
-    ├── 01_check_raw_data.ipynb
-    ├── 02_preprocess_and_stats.ipynb
-    └── 03_train_tokenizer.ipynb
-```
+#### (A) Preprocess (trong `organize_vlsp_data_txt.py`)
+- Normalize: NFC + gộp whitespace
+- Split dev: `DEV_RATIO=0.02`, `SEED=42`
+- Filter:
+  - `MAX_LEN=200` (đếm token thô theo whitespace)
+  - `MAX_RATIO=9.0` (lọc cặp lệch độ dài)
+- Input file name:
+  - `train.en.txt`, `train.vi.txt`, `public_test.en.txt`, `public_test.vi.txt`
+- Output file name:
+  - `train.en/vi`, `dev.en/vi`, `test.en/vi`, `stats.json`
+
+#### (B) Tokenizer (trong `train_spm_vlsp.py` + `src/tokenizer.py`)
+- `vocab_size=8000`, `model_type=unigram`, `character_coverage=1.0`
+- **Special token IDs cố định** (để khớp tokenizer/model):
+  - `pad_id=0`, `unk_id=1`, `bos_id=2`, `eos_id=3`
+
+#### (C) Dataset encode (trong `src/dataset.py`)
+- `src`: encode và **thêm EOS** (`add_eos=True`)
+- `tgt`: tạo `dec_in=[BOS ...]` và `dec_out=[... EOS]`
+- `collate_fn`: pad theo `pad_id=0` + tạo padding mask
 
 ---
 
-## 5. Code chính đã hoàn thành
+### Train
 
-### 5.1. `src/tokenizer.py`
-
-Wrapper đơn giản cho SentencePiece:
-
-- Load model từ `data/spm/spm_unigram.model`.
-- Định nghĩa các ID đặc biệt:
-
-```python
-pad_id = 0
-unk_id = 1
-bos_id = 2
-eos_id = 3
-```
-
-- Các hàm chính:
-
-```python
-encode_src(text, add_bos=False, add_eos=True)
-    # Mã hóa câu nguồn, trả về list[int].
-    # Thường dùng add_eos=True cho encoder.
-
-encode_tgt(text)
-    # Mã hóa câu đích, trả về:
-    #   dec_in_ids: [BOS, ..., token_n]
-    #   dec_out_ids: [..., token_n, EOS]
-    # Dùng cho decoder input / target output.
-
-decode(ids)
-    # Giải mã list[int] về text, bỏ pad nếu cần.
-```
-
-### 5.2. `src/dataset.py`
-
-Chứa hai thành phần chính: `NMTDataset` và `collate_fn`.
-
-#### `NMTDataset`
-
-Dataset PyTorch cho bài toán NMT En–Vi.
-
-- Input:
-  - `data_dir`: thư mục chứa `data/processed`.
-  - `split`: `"train"`, `"valid"` hoặc `"test"`.
-  - `tokenizer`: instance của `SubwordTokenizer`.
-  - `max_src_len`, `max_tgt_len`: độ dài tối đa cho source/target.
-
-- Với mỗi phần tử `idx`, dataset:
-  1. Đọc `src_text` từ `*.en`, `tgt_text` từ `*.vi`.
-  2. Encode với SentencePiece:
-     - `src_ids = tokenizer.encode_src(src_text, add_eos=True)`
-     - `tgt_in_ids, tgt_out_ids = tokenizer.encode_tgt(tgt_text)`
-  3. Truncate về `max_src_len` / `max_tgt_len`.
-  4. Trả về dict:
-
-```python
-{
-  "src_ids": List[int],
-  "tgt_in_ids": List[int],
-  "tgt_out_ids": List[int],
-}
-```
-
-#### `collate_fn`
-
-Hàm `collate_fn(batch, pad_id=0)`:
-
-- Nhận vào list các sample từ `NMTDataset`.
-- Tìm độ dài lớn nhất `max_src_len`, `max_tgt_len` trong batch.
-- Padding tất cả sequences đến chiều dài này.
-- Tạo thêm padding mask:
-
-```python
-{
-  "src_ids": LongTensor (B, S),
-  "tgt_in_ids": LongTensor (B, T),
-  "tgt_out_ids": LongTensor (B, T),
-  "src_padding_mask": BoolTensor (B, S),   # True tại vị trí PAD
-  "tgt_padding_mask": BoolTensor (B, T),
-}
-```
-
----
-
-## 6. Ví dụ sử dụng DataLoader
-
-Ví dụ test nhanh:
-
-```python
-from pathlib import Path
-import sys
-import torch
-from torch.utils.data import DataLoader
-
-ROOT = Path(".").resolve()
-SRC_DIR = ROOT / "src"
-sys.path.append(str(SRC_DIR))
-
-from tokenizer import SubwordTokenizer
-from dataset import NMTDataset, collate_fn
-
-tok = SubwordTokenizer(ROOT / "data/spm/spm_unigram.model")
-vocab_size = tok.sp.get_vocab_size()
-
-train_dataset = NMTDataset(
-    data_dir=str(ROOT / "data/processed"),
-    split="train",
-    tokenizer=tok,
-    max_src_len=70,
-    max_tgt_len=70,
-)
-
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=32,
-    shuffle=True,
-    collate_fn=lambda batch: collate_fn(batch, pad_id=tok.pad_id),
-)
-
-batch = next(iter(train_loader))
-for k, v in batch.items():
-    print(k, v.shape, v.dtype)
-```
-
-Ví dụ output:
-
-```text
-src_ids torch.Size([32, 59]) torch.int64
-tgt_in_ids torch.Size([32, 50]) torch.int64
-tgt_out_ids torch.Size([32, 50]) torch.int64
-src_padding_mask torch.Size([32, 59]) torch.bool
-tgt_padding_mask torch.Size([32, 50]) torch.bool
-```
-
----
-
-## 7. Yêu cầu môi trường
-
-- Python 3.9+
-- PyTorch
-- sentencepiece
-- numpy
-
-Cài đặt nhanh:
-
+#### 1) Preprocess dữ liệu
+Chạy tại `project_root/` (nơi có `data/`):
 ```bash
-pip install torch sentencepiece numpy
+python organize_vlsp_data_txt.py
 ```
 
----
+#### 2) Train tokenizer SentencePiece
+Mặc định script đọc `data/processed/train.{en,vi}` và xuất `data/spm/spm.{model,vocab}`:
+```bash
+python train_spm_vlsp.py
+```
 
-## 8. Kế hoạch tiếp theo (roadmap)
+(Option) đổi vocab/model_type:
+```bash
+python train_spm_vlsp.py --vocab_size 12000 --model_type bpe
+```
 
-Các phần tiếp theo (sẽ được bổ sung):
+#### 3) Fine-tune Transformer (notebook)
+Mở và chạy:
+- `notebook/trainning-nlp-p2.ipynb` → **Run All**
 
-1. Cài đặt kiến trúc **Transformer Encoder–Decoder** từ đầu:
-   - Scaled Dot-Product Attention, Multi-Head Attention.
-   - Positional Encoding (sinusoidal).
-   - Encoder/Decoder Layer (self-attention, cross-attention, FFN, LayerNorm, residual).
-2. Xây dựng `TransformerNMT`:
-   - Embedding + PositionalEncoding.
-   - Encoder + Decoder.
-   - Output projection sang vocabulary.
-3. Training loop:
-   - CrossEntropyLoss (ignore padding).
-   - Optimizer (Adam / AdamW).
-   - Scheduler với warmup.
-   - Log loss & perplexity trên train/valid.
-4. Decoding:
-   - Greedy search.
-   - Beam search (theo yêu cầu bài tập).
-5. Evaluation:
-   - BLEU score trên test set.
-   - So sánh greedy vs beam.
+Trong notebook, đảm bảo các path trỏ đúng theo cây thư mục này:
+- `PROCESSED_DIR = "data/processed"`
+- `SPM_PATH = "data/spm/spm.model"`
+- `CKPT_PATH = "notebook/best_transformer_v3.pt"`
 
 ---
 
-## 9. Ghi chú
+### Output
+- Processed data:
+  - `data/processed/{train,dev,test}.{en,vi}`
+  - `data/processed/stats.json`
+- Tokenizer:
+  - `data/spm/spm.model`
+  - `data/spm/spm.vocab`
+- Fine-tuned checkpoint (best):
+  - (theo notebook) thường lưu vào `notebook/` hoặc thư mục output trong cell save, ví dụ: `notebook/best_finetune.pt`
 
-- Pipeline được viết theo hướng **tự triển khai tối đa**, không dùng `torchtext` hay HuggingFace Transformers, để phù hợp với mục tiêu **“Transformer from scratch”**.
-- Phần này có thể dùng trực tiếp làm nội dung cho chương **Xử lý dữ liệu** trong báo cáo đồ án (có thể copy lại, thêm hình/biểu đồ minh họa thống kê).
-````
-::contentReference[oaicite:0]{index=0}
+---
+
+### Ghi chú
+- **Tokenizer phải khớp checkpoint**: nếu checkpoint pretrained của bạn train với `spm.model` khác, hãy dùng đúng `spm.model` đó khi fine-tune (không đổi vocab).
+- Preprocess yêu cầu **align 1-1 theo dòng** giữa EN và VI (lệch số dòng sẽ báo lỗi).
+
+## 3. Fine-tune dữ liệu medical trên Qwen2.5-1.5B-Instruct với LoRA
+
+Fine-tune (SFT) `Qwen/Qwen2.5-1.5B-Instruct` bằng **LoRA** cho dịch y khoa 2 chiều **EN→VI** và **VI→EN** (DDP với `torchrun`).
+
+### Data
+Input (đã processed, align 1-1 theo dòng):
+- `/kaggle/input/data-vlsp/processed/{train,valid,test}.{en,vi}`
+
+### Notebooks liên quan
+- `qwen-medical-data-analysis.ipynb`: QC dữ liệu + thống kê độ dài/token + chuẩn bị dữ liệu SFT.
+- `qwen-fine-tune-vlsp-en2vi-train.ipynb`: train LoRA EN→VI (tạo `/kaggle/working/train_qwen_en2vi_lora.py`).
+- `qwen-fine-tune-vlsp-vi2en-train.ipynb`: train LoRA VI→EN (tạo `/kaggle/working/train_qwen_vi2en_lora.py`).
+
+### Cấu hình chính
+- Prompt instruction “professional medical translator”; học theo dạng completion.
+- Mask label `-100` cho phần prompt, chỉ học phần target + `eos_token`.
+- LoRA target modules: `q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj`
+- Hyperparams (theo notebook): `max_seq_length=320`, `bs=4`, `grad_accum=8`, `lr=2e-4`, `max_steps=8000`, `eval/save=800`, `lora_dropout=0.05`
+- Lưu ý: giữ tham số trainable (LoRA) ở **fp32** để ổn định AMP/GradScaler.
+
+### Train (DDP)
+EN→VI:
+```bash
+TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_en2vi_lora.py \
+  --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
+  --dataset_dir "/kaggle/working/vlsp_en2vi_run/dataset_en2vi_raw" \
+  --output_dir "/kaggle/working/vlsp_en2vi_run/lora_en2vi_qwen2.5_1.5b" \
+  --max_seq_length 320 \
+  --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
+  --gradient_accumulation_steps 8 \
+  --learning_rate 2e-4 --lora_dropout 0.05 \
+  --max_steps 8000 \
+  --eval_steps 800 --save_steps 800 --logging_steps 50
+```
+VI→EN:
+```bash
+TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_vi2en_lora.py \
+  --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
+  --dataset_dir "/kaggle/working/vlsp_vi2en_run/dataset_vi2en_raw" \
+  --output_dir "/kaggle/working/vlsp_vi2en_run/lora_vi2en_qwen2.5_1.5b" \
+  --max_seq_length 320 \
+  --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
+  --gradient_accumulation_steps 8 \
+  --learning_rate 2e-4 --lora_dropout 0.05 \
+  --max_steps 8000 \
+  --eval_steps 800 --save_steps 800 --logging_steps 50
+```
+### Output
+- EN→VI adapter: `/kaggle/working/vlsp_en2vi_run/lora_en2vi_qwen2.5_1.5b`
+- VI→EN adapter: `/kaggle/working/vlsp_vi2en_run/lora_vi2en_qwen2.5_1.5b`
+
+(Ghi chú) BLEU evaluation nằm ở các notebook test (`qwen-fine-tune-vlsp-*-test.ipynb`), có bước **cắt prompt khỏi output** trước khi decode để tránh BLEU sai.
+
+## 4. Link data sử dụng cho dự án
+
+- Link GGDrive data dùng cho phần train transformer from scratch: https://drive.google.com/file/d/1Y9MjBf03auNa5M8PqjsIRblN9k1bsyOW/view?usp=sharing
+- Link GGDrive data dùng cho phần Fine-tune từ transformer tự phần 1: https://drive.google.com/drive/folders/1PfbaI7k-GGSGXCZAf0nr8b-pIZ94FuT0?usp=sharing
+- Link GGDrive data dùng cho phần FIne-tune với Qwen/Qwen2.5-1.5B-Instruct: https://drive.google.com/file/d/1EYK0LBb8KSl3FUuFODRy2JtE3-ZfsTv8/view?usp=sharing
