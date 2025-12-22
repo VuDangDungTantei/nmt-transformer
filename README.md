@@ -169,5 +169,5 @@ TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kagg
 ## 4. Link data sử dụng cho dự án
 
 - Link GGDrive data dùng cho phần train transformer from scratch: https://drive.google.com/file/d/1Y9MjBf03auNa5M8PqjsIRblN9k1bsyOW/view?usp=sharing
-- Link GGDrive data dùng cho phần Fine-tune từ transformer tự phần 1:
+- Link GGDrive data dùng cho phần Fine-tune từ transformer tự phần 1: https://drive.google.com/drive/folders/1PfbaI7k-GGSGXCZAf0nr8b-pIZ94FuT0?usp=sharing
 - Link GGDrive data dùng cho phần FIne-tune với Qwen/Qwen2.5-1.5B-Instruct: https://drive.google.com/file/d/1EYK0LBb8KSl3FUuFODRy2JtE3-ZfsTv8/view?usp=sharing
