@@ -4,10 +4,10 @@ Dự án này triển khai **pipeline dữ liệu** cho hệ thống dịch máy
 
 ---
 
-# 1. Triển khai Transformer From Scratch
+## 1. Triển khai Transformer From Scratch
 
-# 2. Fine-tune dữ liệu medical trên Transformer tự huấn luyện
+## 2. Fine-tune dữ liệu medical trên Transformer tự huấn luyện
 
-# 3. Fine-tune dữ liệu medical trên Qwen2.5-1.5B-Instruct với LoRA
+## 3. Fine-tune dữ liệu medical trên Qwen2.5-1.5B-Instruct với LoRA
 
-# 4. Link data sử dụng cho dự án
+## 4. Link data sử dụng cho dự án
