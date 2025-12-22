@@ -4,7 +4,58 @@ Dự án này triển khai **pipeline dữ liệu** cho hệ thống dịch máy
 
 ---
 
-## 1. Triển khai Transformer From Scratch
+## 1. Triển khai Transformer From Scratch (En–Vi)
+
+Xây dựng và huấn luyện mô hình dịch máy Seq2Seq dựa trên kiến trúc **Transformer Encoder–Decoder** theo hướng “from scratch” (tự cài đặt Multi-Head Attention, Positional Encoding, Encoder/Decoder blocks bằng PyTorch thuần). Mô hình được huấn luyện cho bài toán dịch **EN→VI** trên dữ liệu tổng hợp từ **IWSLT15 + TED2020**.
+
+### Data
+
+#### Input (raw)
+- `data/raw/train.{en,vi}`: tập huấn luyện
+- `data/raw/valid.{en,vi}`: tập validation
+- `data/raw/test.{en,vi}`: tập test
+
+#### Output (processed)
+Sau khi lọc và làm sạch (loại dòng rỗng, chuẩn hoá Unicode, lọc độ dài/độ lệch bất thường), tạo:
+- `data/processed/train.{en,vi}`
+- `data/processed/valid.{en,vi}`
+- `data/processed/test.{en,vi}`
+
+#### Tokenizer (SentencePiece)
+Dùng **SentencePiece** với **shared vocabulary** cho cả EN và VI:
+- `data/spm/spm.model`
+- `data/spm/spm.vocab`
+
+---
+
+### Scripts / Modules liên quan
+- `src/models/`: hiện thực kiến trúc Transformer (Attention, Positional Encoding, Encoder/Decoder layers)
+- `src/dataset.py`: đọc dữ liệu, encode token, tạo **padding mask** và **causal mask**, `collate_fn`
+- `trainning-phan1.ipynb`: training loop, logging, lưu checkpoint
+
+
+---
+
+### Cấu hình chính (tổng quan)
+
+#### (A) Kiến trúc mô hình
+- Transformer chuẩn gồm **Encoder–Decoder**, mỗi block có Attention + Feed-Forward + Residual + LayerNorm.
+- Decoder dùng masking đầy đủ để đảm bảo tính tự hồi quy và không attend vào token `PAD`.
+- Có regularization (dropout) và cơ chế làm mượt nhãn (label smoothing) để tăng khả năng tổng quát hoá.
+
+#### (B) Tokenizer & Pipeline dữ liệu
+- Tokenization dùng SentencePiece để giảm OOV và xử lý tốt từ mới.
+- Dữ liệu huấn luyện được dynamic padding theo batch; loss bỏ qua các vị trí `PAD`.
+- Chuỗi đích được tách thành `dec_in` (bắt đầu bằng BOS) và `dec_out` (kết thúc bằng EOS) để huấn luyện theo teacher forcing.
+
+#### (C) Optimizer & Schedule
+- Tối ưu hoá với Adam/AdamW.
+- Dùng learning-rate schedule kiểu **Noam** (có warmup) để huấn luyện ổn định.
+- Hỗ trợ **mixed precision (AMP)** để tăng tốc và tiết kiệm bộ nhớ; có thể kèm gradient clipping khi cần.
+
+---
+
+
 
 ## 2. Fine-tune dữ liệu medical trên Transformer tự huấn luyện
 
