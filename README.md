@@ -30,29 +30,31 @@ Input (đã processed, align 1-1 theo dòng):
 
 ### Train (DDP)
 EN→VI:
-    TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_en2vi_lora.py \
-      --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
-      --dataset_dir "/kaggle/working/vlsp_en2vi_run/dataset_en2vi_raw" \
-      --output_dir "/kaggle/working/vlsp_en2vi_run/lora_en2vi_qwen2.5_1.5b" \
-      --max_seq_length 320 \
-      --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
-      --gradient_accumulation_steps 8 \
-      --learning_rate 2e-4 --lora_dropout 0.05 \
-      --max_steps 8000 \
-      --eval_steps 800 --save_steps 800 --logging_steps 50
-
+```bash
+TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_en2vi_lora.py \
+  --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
+  --dataset_dir "/kaggle/working/vlsp_en2vi_run/dataset_en2vi_raw" \
+  --output_dir "/kaggle/working/vlsp_en2vi_run/lora_en2vi_qwen2.5_1.5b" \
+  --max_seq_length 320 \
+  --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
+  --gradient_accumulation_steps 8 \
+  --learning_rate 2e-4 --lora_dropout 0.05 \
+  --max_steps 8000 \
+  --eval_steps 800 --save_steps 800 --logging_steps 50
+```
 VI→EN:
-    TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_vi2en_lora.py \
-      --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
-      --dataset_dir "/kaggle/working/vlsp_vi2en_run/dataset_vi2en_raw" \
-      --output_dir "/kaggle/working/vlsp_vi2en_run/lora_vi2en_qwen2.5_1.5b" \
-      --max_seq_length 320 \
-      --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
-      --gradient_accumulation_steps 8 \
-      --learning_rate 2e-4 --lora_dropout 0.05 \
-      --max_steps 8000 \
-      --eval_steps 800 --save_steps 800 --logging_steps 50
-
+```bash
+TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 torchrun --nproc_per_node=2 /kaggle/working/train_qwen_vi2en_lora.py \
+  --model_id "Qwen/Qwen2.5-1.5B-Instruct" \
+  --dataset_dir "/kaggle/working/vlsp_vi2en_run/dataset_vi2en_raw" \
+  --output_dir "/kaggle/working/vlsp_vi2en_run/lora_vi2en_qwen2.5_1.5b" \
+  --max_seq_length 320 \
+  --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
+  --gradient_accumulation_steps 8 \
+  --learning_rate 2e-4 --lora_dropout 0.05 \
+  --max_steps 8000 \
+  --eval_steps 800 --save_steps 800 --logging_steps 50
+```
 ### Output
 - EN→VI adapter: `/kaggle/working/vlsp_en2vi_run/lora_en2vi_qwen2.5_1.5b`
 - VI→EN adapter: `/kaggle/working/vlsp_vi2en_run/lora_vi2en_qwen2.5_1.5b`
