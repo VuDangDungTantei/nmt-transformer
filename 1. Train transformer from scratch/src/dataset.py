@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict, Any
 import torch
 from torch.utils.data import Dataset
 
-from tokenizer import SubwordTokenizer  # dùng class bạn đã tạo
+from tokenizer import SubwordTokenizer
 
 
 class NMTDataset(Dataset):
