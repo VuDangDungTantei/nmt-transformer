@@ -60,3 +60,7 @@ VI→EN:
 (Ghi chú) BLEU evaluation nằm ở các notebook test (`qwen-fine-tune-vlsp-*-test.ipynb`), có bước **cắt prompt khỏi output** trước khi decode để tránh BLEU sai.
 
 ## 4. Link data sử dụng cho dự án
+
+- Link GGDrive data dùng cho phần train transformer from scratch: https://drive.google.com/file/d/1Y9MjBf03auNa5M8PqjsIRblN9k1bsyOW/view?usp=sharing
+- Link GGDrive data dùng cho phần Fine-tune từ transformer tự phần 1:
+- Link GGDrive data dùng cho phần FIne-tune với Qwen/Qwen2.5-1.5B-Instruct: https://drive.google.com/file/d/1EYK0LBb8KSl3FUuFODRy2JtE3-ZfsTv8/view?usp=sharing
