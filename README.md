@@ -36,22 +36,23 @@ Dùng **SentencePiece** với **shared vocabulary** cho cả EN và VI:
 
 ---
 
-### Cấu hình chính (tổng quan)
+### Cấu hình chính 
 
 #### (A) Kiến trúc mô hình
-- Transformer chuẩn gồm **Encoder–Decoder**, mỗi block có Attention + Feed-Forward + Residual + LayerNorm.
-- Decoder dùng masking đầy đủ để đảm bảo tính tự hồi quy và không attend vào token `PAD`.
-- Có regularization (dropout) và cơ chế làm mượt nhãn (label smoothing) để tăng khả năng tổng quát hoá.
+- Transformer theo kiến trúc Encoder–Decoder, mỗi block gồm Multi-Head Attention, Feed-Forward, residual connection và LayerNorm.
+- Có cả hai biến thể Pre-Norm và Post-Norm trong kiến trúc để đối chiếu khi huấn luyện.
+- Decoder dùng đầy đủ mask để đảm bảo tự hồi quy và không attend vào token PAD.
+- Dùng dropout và label smoothing để tăng ổn định và cải thiện tổng quát hoá.
 
 #### (B) Tokenizer & Pipeline dữ liệu
-- Tokenization dùng SentencePiece để giảm OOV và xử lý tốt từ mới.
-- Dữ liệu huấn luyện được dynamic padding theo batch; loss bỏ qua các vị trí `PAD`.
-- Chuỗi đích được tách thành `dec_in` (bắt đầu bằng BOS) và `dec_out` (kết thúc bằng EOS) để huấn luyện theo teacher forcing.
+- Dùng SentencePiece với shared vocabulary cho cả EN và VI để giảm OOV và xử lý tốt từ mới.
+- Dữ liệu pad động theo batch, khi tính loss thì bỏ qua PAD.
+- Target tách thành dec_in và dec_out, dec_in bắt đầu bằng BOS và dec_out kết thúc bằng EOS để train theo teacher forcing.
 
 #### (C) Optimizer & Schedule
-- Tối ưu hoá với Adam/AdamW.
-- Dùng learning-rate schedule kiểu **Noam** (có warmup) để huấn luyện ổn định.
-- Hỗ trợ **mixed precision (AMP)** để tăng tốc và tiết kiệm bộ nhớ; có thể kèm gradient clipping khi cần.
+- Tối ưu bằng Adam hoặc AdamW.
+- Dùng Noam schedule với warmup để học ổn định, learning rate tăng ở giai đoạn đầu và giảm dần về sau.
+- Dùng AMP để tăng tốc và tiết kiệm bộ nhớ, khi cần thì kèm gradient clipping để tránh nổ gradient.
 
 ---
 
